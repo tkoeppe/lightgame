@@ -1,0 +1,24 @@
+language: c++
+
+dist: bionic
+
+sudo: false
+
+jdk:
+  - oraclejdk8
+
+env:
+  - PATH=${PATH}:/usr/lib/x86_64-linux-gnu/qt5/bin
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8'
+        key_url: 'https://bazel.build/bazel-release.pub.gpg'
+    packages:
+      - qt5-default
+      - bazel
+
+script:
+  - moc --version
+  - bazel build -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_cli :game_qt
