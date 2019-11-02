@@ -33,3 +33,8 @@
 
 # Bazel
 /bazel-*
+
+# Specific executables
+
+game_cli
+game_qt
