@@ -1,7 +1,13 @@
 SAN       =
 CFLAGS   += -O2 -fPIC -flto $(SAN)
 CXXFLAGS += $(CFLAGS) -std=c++17 -I /usr/include/x86_64-linux-gnu/qt5
-LD_FLAGS += -s -flto $(SAN)
+LD_FLAGS += -s -fPIC -flto $(SAN)
+
+PKGCONFIG = pkg-config
+PACKAGES = Qt5Core Qt5Widgets Qt5Gui
+QT_CFLAGS = $(shell $(PKGCONFIG) --cflags $(PACKAGES))
+QT_LDFLAGS = $(shell $(PKGCONFIG) --libs $(PACKAGES))
+QT_MOCBIN = $(shell $(PKGCONFIG) --variable=host_bins Qt5Core)/moc
 
 .PHONY: all clean
 
@@ -11,16 +17,16 @@ clean:
 	rm -f *.o moc_*.cc game_cli game_qt
 
 game_cli: game_cli.o game.o
-	$(CXX) $(LD_FLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LD_FLAGS)
 
 game_qt: game_qt.o game.o game_window.o game_tile.o game_keygrabber.o moc_game_window.o moc_game_tile.o moc_game_keygrabber.o 
-	$(CXX) $(LD_FLAGS) -o $@ $^ -fPIC -lQt5Core -lQt5Widgets -lQt5Gui
+	$(CXX) -o $@ $^ $(LD_FLAGS) $(QT_LDFLAGS)
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 moc_%.cc: %.h
-	moc -o $@ $<
+	$(QT_MOCBIN) -o $@ $<
 
 game.o: game.cc game.h
 game_keygrabber.o: game_keygrabber.cc game_keygrabber.h
