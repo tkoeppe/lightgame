@@ -25,8 +25,7 @@ namespace tkware::lightgame {
 Game::Game(int height, int width)
     : height_(height),
       width_(width),
-      x_(0),
-      y_(0),
+      pos_{0, 0},
       board_(std::make_unique<State[]>(4 * RawSize())) {
   for (int x = 0; x != width_ + 2; ++x) {
     At(x, 0) = At(x, height_ + 1) = State::kBlocked;
@@ -47,10 +46,10 @@ bool Game::Start(int x, int y) {
     return false;
   } else if (1 <= x && x <= width_ && 1 <= y && y <= height_ &&
              At(x, y) == State::kOff) {
-    x_ = x;
-    y_ = y;
+    pos_.x = x;
+    pos_.y = y;
     CopyBoard(0, 1);
-    At(x_, y_) = State::kOn;
+    At(pos_.x, pos_.y) = State::kOn;
     return true;
   } else {
     return false;
@@ -64,12 +63,12 @@ bool Game::HaveWon() const {
 
 void Game::Reset() {
   if (HasStarted()) {
-    x_ = y_ = 0;
+    pos_.x = pos_.y = 0;
     CopyBoard(1, 0);
   }
 }
 
-bool Game::Move(Dir dir) {
+bool Game::Move(Dir dir, Path *path) {
   if (!HasStarted()) {
     std::cout << "Game has not started yet!\n";
     return false;
@@ -77,12 +76,13 @@ bool Game::Move(Dir dir) {
     std::cout << "Invalid move!\n";
     return false;
   } else {
-    MoveOne(dir);
+    MoveOne(dir, path);
+    if (path) path->push_back(pos_);
     return true;
   }
 }
 
-bool Game::MoveFast(Dir dir) {
+bool Game::MoveFast(Dir dir, Path *path) {
   if (!HasStarted()) {
     std::cout << "Game has not started yet!\n";
     return false;
@@ -91,7 +91,7 @@ bool Game::MoveFast(Dir dir) {
     return false;
   } else {
     for (;;) {
-      MoveOne(dir);
+      MoveOne(dir, path);
       switch (Dir d = ValidDirs()) {
         case kUp:
         case kDown:
@@ -100,13 +100,14 @@ bool Game::MoveFast(Dir dir) {
           dir = d;
           break;
         default:
+          if (path) path->push_back(pos_);
           return true;
       }
     }
   }
 }
 
-void Game::MoveOne(Dir dir) {
+void Game::MoveOne(Dir dir, Path *path) {
   struct IncType {
     int a, b;
   };
@@ -125,10 +126,11 @@ void Game::MoveOne(Dir dir) {
     }
   };
   auto [dx, dy] = increment_for_move(dir);
-  while (At(x_ + dx, y_ + dy) == State::kOff) {
-    x_ += dx;
-    y_ += dy;
-    At(x_, y_) = State::kOn;
+  while (At(pos_.x + dx, pos_.y + dy) == State::kOff) {
+    if (path) path->push_back(pos_);
+    pos_.x += dx;
+    pos_.y += dy;
+    At(pos_.x, pos_.y) = State::kOn;
   }
 }
 
@@ -163,20 +165,18 @@ bool Game::IsSolvable(std::vector<int>* solutions) {
    public:
     StateSaver(Game* game)
         : game_(game),
-          x_(game_->x_),
-          y_(game_->y_) {
+          pos_(game_->pos_) {
       game_->CopyBoard(0, 2);
     }
 
     ~StateSaver() {
       game_->CopyBoard(2, 0);
-      game_->x_ = x_;
-      game_->y_ = y_;
+      game_->pos_ = pos_;
     }
 
    private:
     Game* game_;
-    int x_, y_;;
+    Coord pos_;
   } state_saver(this);
 
   struct Node {

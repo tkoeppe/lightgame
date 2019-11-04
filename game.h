@@ -19,6 +19,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <vector>
 
 namespace tkware::lightgame {
 
@@ -46,6 +47,9 @@ class Game {
 
   friend void operator|=(Dir& lhs, Dir rhs) { lhs = Dir(int(lhs) | int(rhs)); }
 
+  struct Coord { int x, y; };
+  using Path = std::vector<Coord>;
+
   // Creates a game of the given size.
   explicit Game(int height, int width);
 
@@ -54,22 +58,23 @@ class Game {
 
   int Height() const { return height_; }
   int Width() const { return width_; }
-  int X() const { return x_; }
-  int Y() const { return y_; }
+  int X() const { return pos_.x; }
+  int Y() const { return pos_.y; }
 
   // Starts the game at the given field. Returns true if the game hadn't already
   // been started and the given field is "off" (not "blocked"), false otherwise.
   bool Start(int x, int y);
 
   bool HasStarted() const {
-    return x_ != 0 && y_ != 0;
+    return pos_.x != 0 && pos_.y != 0;
   }
 
   // Requests a move in the given direction; returns true if this is possible,
   // and false if either the direction was invalid or no game is in progress.
   // The MoveFast version keeps going as long as there is a unique direction.
-  bool Move(Dir dir);
-  bool MoveFast(Dir dir);
+  // If path is not null, the list of visited fields are written to *path.
+  bool Move(Dir dir, Path* path = nullptr);
+  bool MoveFast(Dir dir, Path *path = nullptr);
 
   // Returns whether the game is in the win state (no "off" fields left).
   bool HaveWon() const;
@@ -91,10 +96,10 @@ class Game {
   Dir ValidDirs() const {
     Dir dir = kNone;
     if (HasStarted()) {
-      if (At(x_, y_ - 1) == State::kOff) dir |= kUp;
-      if (At(x_, y_ + 1) == State::kOff) dir |= kDown;
-      if (At(x_ - 1, y_) == State::kOff) dir |= kLeft;
-      if (At(x_ + 1, y_) == State::kOff) dir |= kRight;
+      if (At(pos_.x, pos_.y - 1) == State::kOff) dir |= kUp;
+      if (At(pos_.x, pos_.y + 1) == State::kOff) dir |= kDown;
+      if (At(pos_.x - 1, pos_.y) == State::kOff) dir |= kLeft;
+      if (At(pos_.x + 1, pos_.y) == State::kOff) dir |= kRight;
     } else {
       std::cout << "Game has not started yet!\n";
     }
@@ -154,11 +159,11 @@ private:
   void CopyBoard(int from, int to);
 
   // Moves in the given direction.
-  void MoveOne(Dir dir);
+  void MoveOne(Dir dir, Path* path);
 
   const int height_;
   const int width_;
-  int x_, y_;
+  Coord pos_;
   const std::unique_ptr<State[]> board_;
 };
 
