@@ -19,7 +19,7 @@
 
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
-  QCoreApplication::setApplicationName("Game with lights");
+  QCoreApplication::setApplicationName("Corner Paint");
   tkware::lightgame::MainWindow mainwin;
   mainwin.show();
   return app.exec();
