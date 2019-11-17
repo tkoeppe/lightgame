@@ -177,22 +177,22 @@ MainWindow::MainWindow(QWidget* parent)
   auto handle = [=](int type, int a, int b) {
     switch (type) {
       case 1:
-        if (!game->HasStarted()) {
-          [](Game::State& s) { s = Game::State(2 - static_cast<int>(s)); }(game->At(a, b));
+        if (!game_->HasStarted()) {
+          [](Game::State& s) { s = Game::State(2 - static_cast<int>(s)); }(game_->At(a, b));
         }
         break;
       case 2:
-        if (game->Start(a, b)) {
-          printf("Game solvable: %s\n", game->IsSolvable(nullptr) ? "yes" : "no");
+        if (game_->Start(a, b)) {
+          printf("Game solvable: %s\n", game_->IsSolvable(nullptr) ? "yes" : "no");
           mode_label->hide();
-        } else if (a + 1 == game->X() && b == game->Y()) {
-          game->Move(Game::kLeft);
-        } else if (a == game->X() + 1 && b == game->Y()) {
-          game->Move(Game::kRight);
-        } else if (a == game->X() && b + 1 == game->Y()) {
-          game->Move(Game::kUp);
-        } else if (a == game->X() && b == game->Y() + 1) {
-          game->Move(Game::kDown);
+        } else if (a + 1 == game_->X() && b == game_->Y()) {
+          game_->Move(Game::kLeft);
+        } else if (a == game_->X() + 1 && b == game_->Y()) {
+          game_->Move(Game::kRight);
+        } else if (a == game_->X() && b + 1 == game_->Y()) {
+          game_->Move(Game::kUp);
+        } else if (a == game_->X() && b == game_->Y() + 1) {
+          game_->Move(Game::kDown);
         }
         break;
       case 3:
@@ -212,16 +212,16 @@ MainWindow::MainWindow(QWidget* parent)
         };
 
         if (fast_actions->isChecked()) {
-          game->MoveFast(dir_for_key(a));
+          game_->MoveFast(dir_for_key(a));
         } else {
-          game->Move(dir_for_key(a));
+          game_->Move(dir_for_key(a));
         }
 
         break;
     }
 
-    for (int y = 0; y != game->Height(); ++y) {
-      for (int x = 0; x != game->Width(); ++x) {
+    for (int y = 0; y != game_->Height(); ++y) {
+      for (int x = 0; x != game_->Width(); ++x) {
         auto* lbl = board_layout->itemAtPosition(y, x)->widget();
         assert(lbl != nullptr);
         auto* p = dynamic_cast<MouseLabel*>(lbl);
@@ -230,9 +230,9 @@ MainWindow::MainWindow(QWidget* parent)
       }
     }
 
-    if (game->HasStarted()) {
-      if (Game::Dir dirs = game->ValidDirs(); dirs == Game::kNone) {
-        if (game->HaveWon()) {
+    if (game_->HasStarted()) {
+      if (Game::Dir dirs = game_->ValidDirs(); dirs == Game::kNone) {
+        if (game_->HaveWon()) {
           win_label->show();
         } else {
           lose_label->show();
@@ -245,7 +245,7 @@ MainWindow::MainWindow(QWidget* parent)
       win_label->hide();
       lose_label->hide();
       set_key_grabbing(false);
-      code_edit->setText(QString::fromStdString(SaveToHexString(*game)));
+      code_edit->setText(QString::fromStdString(SaveToHexString(*game_)));
     }
   };
 
@@ -255,9 +255,9 @@ MainWindow::MainWindow(QWidget* parent)
       delete p;
     }
 
-    for (int y = 0; y != game->Height(); ++y) {
-      for (int x = 0; x != game->Width(); ++x) {
-        auto* lbl = new MouseLabel(game.get(), x + 1, y + 1);
+    for (int y = 0; y != game_->Height(); ++y) {
+      for (int x = 0; x != game_->Width(); ++x) {
+        auto* lbl = new MouseLabel(game_.get(), x + 1, y + 1);
         QObject::connect(lbl, &MouseLabel::gameChanged, handle);
         board_layout->addWidget(lbl, y, x);
       }
@@ -282,7 +282,7 @@ MainWindow::MainWindow(QWidget* parent)
   });
 
   QObject::connect(button1a, &QPushButton::clicked, [=]() {
-    game = std::make_unique<Game>(height_box->value(), width_box->value());
+    game_ = std::make_unique<Game>(height_box->value(), width_box->value());
     init_grid();
   });
 
@@ -298,24 +298,24 @@ MainWindow::MainWindow(QWidget* parent)
                   "may block at most %1 fields.").arg(h * w - 1));
       return;
     }
-    game = std::make_unique<Game>(h, w);
+    game_ = std::make_unique<Game>(h, w);
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    game->AugmentRandomly(std::uniform_int_distribution(rmin, rmax)(rbg_), &rbg_);
+    game_->AugmentRandomly(std::uniform_int_distribution(rmin, rmax)(rbg_), &rbg_);
     QApplication::restoreOverrideCursor();
     init_grid();
   });
 
   QObject::connect(button1c, &QPushButton::clicked, [=]() {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    game->AugmentRandomly(aug_box->value(), &rbg_);
+    game_->AugmentRandomly(aug_box->value(), &rbg_);
     QApplication::restoreOverrideCursor();
     handle(0, 0, 0);
   });
 
   QObject::connect(button2, &QPushButton::clicked, [=]() {
-    if (game != nullptr) {
-      game->Reset();
+    if (game_ != nullptr) {
+      game_->Reset();
       handle(0, 0, 0);
       mode_label->show();
     }
@@ -324,7 +324,7 @@ MainWindow::MainWindow(QWidget* parent)
   QObject::connect(code_load, &QPushButton::clicked, [=]() {
     const std::string code = code_edit->text().toStdString();
     if (std::unique_ptr<Game> new_game = LoadFromHexString(code)) {
-      game = std::move(new_game);
+      game_ = std::move(new_game);
       init_grid();
     } else {
       printf("Error during loading of '%s'\n", code.c_str());
@@ -335,15 +335,15 @@ MainWindow::MainWindow(QWidget* parent)
     const std::string code =
         QGuiApplication::clipboard()->text().trimmed().toStdString();
     if (std::unique_ptr<Game> new_game = LoadFromHexString(code)) {
-      game = std::move(new_game);
+      game_ = std::move(new_game);
       init_grid();
     }
   });
 
   QObject::connect(hint_button, &QPushButton::clicked, [=]() {
-    if (game == nullptr) return;
+    if (game_ == nullptr) return;
     std::vector<int> s;
-    if (!game->IsSolvable(&s)) {
+    if (!game_->IsSolvable(&s)) {
       QMessageBox::information(this, "Hint", QString("This layout is not solvable."));
     } else {
       printf("Solutions:\n");

@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow {
   explicit MainWindow(QWidget* parent = nullptr);
 
  private:
-  std::unique_ptr<Game> game;
+  std::unique_ptr<Game> game_;
   std::mt19937 rbg_;
   KeyGrabber key_grabber_;
 };
