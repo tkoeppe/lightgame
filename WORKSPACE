@@ -1,11 +1,23 @@
 workspace(name = "tknet")
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-git_repository(
+http_archive(
+    name = "com_google_googletest",
+    strip_prefix = "googletest-master",
+    urls = ["https://github.com/google/googletest/archive/master.zip"],
+)
+
+http_archive(
+    name = "com_google_benchmark",
+    strip_prefix = "benchmark-master",
+    urls = ["https://github.com/google/benchmark/archive/master.zip"],
+)
+
+http_archive(
     name = "bazel_rules_qt",
-    remote = "https://github.com/justbuchanan/bazel_rules_qt.git",
-    branch = "master",
+    strip_prefix="bazel_rules_qt-master",
+    urls = ["https://github.com/justbuchanan/bazel_rules_qt/archive/master.zip"],
 )
 
 new_local_repository(
