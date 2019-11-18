@@ -6,9 +6,11 @@ A grid-based puzzle game with lights.
 
 Corner Paint presents a rectangular grid of tiles which are either "lights" or
 are "blocked". Lights start "off" (red). The goal of the game is to switch all
-the lights on (green). To do so, you start at a tile that contains a red light
-and move as far as you can in one of the cardinal directions, switching lights
-on.
+the lights on (green). To do so, you select a start tile that contains a red
+light. From there you move in one of the cardinal directions in each move,
+switching on all lights encountered along the way. You always have to move as
+far as possible in the chosen direction, and you cannot move across blocked
+tiles or lights that have already been switched on.
 
 The idea is not mine; rather, it appears as a minigame in the adventure game
 "Machinarium" (e.g. [see
