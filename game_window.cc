@@ -185,6 +185,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (game_->Start(a, b)) {
           printf("Game solvable: %s\n", game_->IsSolvable(nullptr) ? "yes" : "no");
           mode_label->hide();
+          button1c->setDisabled(true);
         } else if (a + 1 == game_->X() && b == game_->Y()) {
           game_->Move(Game::kLeft);
         } else if (a == game_->X() + 1 && b == game_->Y()) {
@@ -237,7 +238,6 @@ MainWindow::MainWindow(QWidget* parent)
         } else {
           lose_label->show();
         }
-        set_key_grabbing(false);
       } else {
         set_key_grabbing(true);
       }
@@ -310,7 +310,7 @@ MainWindow::MainWindow(QWidget* parent)
     QApplication::setOverrideCursor(Qt::WaitCursor);
     game_->AugmentRandomly(aug_box->value(), &rbg_);
     QApplication::restoreOverrideCursor();
-    handle(0, 0, 0);
+    init_grid();
   });
 
   QObject::connect(button2, &QPushButton::clicked, [=]() {
@@ -318,6 +318,7 @@ MainWindow::MainWindow(QWidget* parent)
       game_->Reset();
       handle(0, 0, 0);
       mode_label->show();
+      button1c->setDisabled(false);
     }
   });
 
