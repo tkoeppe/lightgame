@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <random>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 
 #include "game.h"
@@ -34,7 +35,13 @@ class MainWindow : public QMainWindow {
   explicit MainWindow(QWidget* parent = nullptr);
 
  private:
+  void RecomputeSolvability();
+  void RedrawStars(QLabel* lbl);
+
   std::unique_ptr<Game> game_;
+  SolutionTracker sol_tracker_;
+  Game::Coord start_pos_;
+
   std::mt19937 rbg_;
   KeyGrabber key_grabber_;
 };

@@ -14,10 +14,13 @@
 
 #include "game_window.h"
 
+#include <algorithm>
 #include <cassert>
+#include <functional>
 #include <memory>
 #include <random>
 #include <string>
+#include <utility>
 
 #include <QtCore/QTimer>
 #include <QtGui/QClipboard>
@@ -73,6 +76,7 @@ MainWindow::MainWindow(QWidget* parent)
   QPushButton* code_clip = new QPushButton(QIcon::fromTheme("edit-paste"), QString());
   QHBoxLayout* meta_layout = new QHBoxLayout;
   QLabel* mode_label = new QLabel("[<i>layout mode</i>]");
+  QLabel* star_label = new QLabel("stars");
   QPushButton* hint_button = new QPushButton("\u2618");
   QPushButton* help_button = new QPushButton("Hel&p");
   QPushButton* quit_button = new QPushButton("&Quit");
@@ -125,6 +129,10 @@ MainWindow::MainWindow(QWidget* parent)
   newbutton_layout->addWidget(button1b);
   newbutton_layout->addWidget(button1c);
   mode_label->hide();
+  mode_label->setTextFormat(Qt::RichText);
+  star_label->hide();
+  star_label->setTextFormat(Qt::RichText);
+  meta_layout->addWidget(star_label);
   meta_layout->addWidget(mode_label);
   meta_layout->addStretch();
   meta_layout->addWidget(hint_button);
@@ -182,11 +190,13 @@ MainWindow::MainWindow(QWidget* parent)
       case 1:
         if (!game_->HasStarted()) {
           [](Game::State& s) { s = Game::State(2 - static_cast<int>(s)); }(game_->At(a, b));
+          RecomputeSolvability();
+          RedrawStars(star_label);
         }
         break;
       case 2:
         if (game_->Start(a, b)) {
-          printf("Game solvable: %s\n", game_->IsSolvable(nullptr) ? "yes" : "no");
+          start_pos_ = {a, b};
           mode_label->hide();
           button1c->setDisabled(true);
         } else if (a + 1 == game_->X() && b == game_->Y()) {
@@ -234,6 +244,9 @@ MainWindow::MainWindow(QWidget* parent)
       if (Game::Dir dirs = game_->ValidDirs(); dirs == Game::kNone) {
         if (game_->HaveWon()) {
           win_label->show();
+          if (sol_tracker_.ReportSolution(start_pos_)) {
+            RedrawStars(star_label);
+          }
         } else {
           lose_label->show();
         }
@@ -265,6 +278,10 @@ MainWindow::MainWindow(QWidget* parent)
     handle(0, 0, 0);
     button1c->setDisabled(false);
     button2->setDisabled(false);
+
+    RecomputeSolvability();
+    RedrawStars(star_label);
+    star_label->show();
     mode_label->show();
 
     QTimer::singleShot(0, this, [=](){ resize(sizeHint()); });
@@ -383,6 +400,37 @@ MainWindow::MainWindow(QWidget* parent)
 
   window->setLayout(main_layout);
   setCentralWidget(window);
+}
+
+void MainWindow::RedrawStars(QLabel* lbl) {
+  const std::size_t found_count = sol_tracker_.FoundCount();
+  const std::size_t total_count = sol_tracker_.TotalCount();
+
+  if (total_count == 0) {
+    lbl->setText(QString::fromUtf16(u"<font color='#A00'>\u274C</font>"));
+    lbl->setToolTip("This layout is unsolvable.");
+  } else {
+    QString star = QString::fromUtf16(u"\u2605");
+    QString t = "Found starts:";
+    for (const Game::Coord& pos : sol_tracker_.FoundSolutions()) {
+      t.append(QString(" [%1, %2]").arg(pos.x).arg(pos.y));
+    }
+    if (found_count == total_count) {
+      lbl->setText(
+          QString("<font color='#DAA520' style='text-decoration: overline underline;'>%1</font>")
+              .arg(star.repeated(found_count)));
+    } else {
+      lbl->setText(
+          QString("<font color='#DAA520'>%1</font><font color='#AAA'>%2</font>")
+              .arg(star.repeated(found_count))
+              .arg(star.repeated(total_count - found_count)));
+    }
+    lbl->setToolTip(t);
+  }
+}
+
+void MainWindow::RecomputeSolvability() {
+  sol_tracker_.RecomputeFromGame(game_.get());
 }
 
 }  //  namespace tkware::lightgame
