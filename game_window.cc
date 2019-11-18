@@ -175,6 +175,9 @@ MainWindow::MainWindow(QWidget* parent)
   };
 
   auto handle = [=](int type, int a, int b) {
+    bool (Game::*mover)(Game::Dir, Game::Path*) =
+        fast_actions->isChecked() ? &Game::MoveFast : &Game::Move;
+
     switch (type) {
       case 1:
         if (!game_->HasStarted()) {
@@ -187,13 +190,13 @@ MainWindow::MainWindow(QWidget* parent)
           mode_label->hide();
           button1c->setDisabled(true);
         } else if (a + 1 == game_->X() && b == game_->Y()) {
-          game_->Move(Game::kLeft);
+          (*game_.*mover)(Game::kLeft, nullptr);
         } else if (a == game_->X() + 1 && b == game_->Y()) {
-          game_->Move(Game::kRight);
+          (*game_.*mover)(Game::kRight, nullptr);
         } else if (a == game_->X() && b + 1 == game_->Y()) {
-          game_->Move(Game::kUp);
+          (*game_.*mover)(Game::kUp, nullptr);
         } else if (a == game_->X() && b == game_->Y() + 1) {
-          game_->Move(Game::kDown);
+          (*game_.*mover)(Game::kDown, nullptr);
         }
         break;
       case 3:
@@ -212,11 +215,7 @@ MainWindow::MainWindow(QWidget* parent)
           }
         };
 
-        if (fast_actions->isChecked()) {
-          game_->MoveFast(dir_for_key(a));
-        } else {
-          game_->Move(dir_for_key(a));
-        }
+        (*game_.*mover)(dir_for_key(a), nullptr);
 
         break;
     }
