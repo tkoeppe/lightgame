@@ -38,3 +38,5 @@
 
 game_cli
 game_qt
+game_test
+game_benchmark

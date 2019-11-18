@@ -12,6 +12,24 @@ cc_binary(
     deps = [":game"],
 )
 
+cc_test(
+    name = "game_test",
+    srcs = ["game_test.cc"],
+    deps = [
+        ":game",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "game_benchmark",
+    srcs = ["game_benchmark.cc"],
+    deps = [
+        ":game",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
 load("@bazel_rules_qt//:qt.bzl", "qt_cc_library")
 
 qt_cc_library(

@@ -21,4 +21,5 @@ addons:
 
 script:
   - $(pkg-config --variable=host_bins Qt5Core)/moc --version
-  - bazel build -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_cli :game_qt
+  - bazel build -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_benchmark :game_cli :game_qt
+  - bazel test -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_test
