@@ -55,7 +55,9 @@ MainWindow::MainWindow(QWidget* parent)
   QPushButton* button1a = new QPushButton("&New (blank) layout");
   QPushButton* button1b = new QPushButton("&Random layout");
   QPushButton* button1c = new QPushButton("Random aug&ment");
+  QHBoxLayout* resetbutton_layout = new QHBoxLayout;
   QPushButton* button2 = new QPushButton("(Re)&start current layout");
+  QPushButton* button3 = new QPushButton("From s&ame start");
   QSpinBox* height_box = new QSpinBox;
   QSpinBox* width_box = new QSpinBox;
   QSpinBox* rand_min_box = new QSpinBox;
@@ -109,6 +111,7 @@ MainWindow::MainWindow(QWidget* parent)
 
   button1c->setDisabled(true);
   button2->setDisabled(true);
+  button3->setDisabled(true);
   win_label->hide();
   win_label->setAlignment(Qt::AlignCenter);
   win_label->setStyleSheet("font-size: 24pt; font-weight: bold; color: #0A0;");
@@ -128,6 +131,10 @@ MainWindow::MainWindow(QWidget* parent)
   newbutton_layout->addWidget(button1a);
   newbutton_layout->addWidget(button1b);
   newbutton_layout->addWidget(button1c);
+  resetbutton_layout->addWidget(button2);
+  resetbutton_layout->addWidget(button3);
+  resetbutton_layout->setStretch(0, 3);
+  resetbutton_layout->setStretch(1, 2);
   mode_label->hide();
   mode_label->setTextFormat(Qt::RichText);
   star_label->hide();
@@ -140,7 +147,7 @@ MainWindow::MainWindow(QWidget* parent)
   meta_layout->addWidget(quit_button);
   buttons_layout->addLayout(newbutton_layout);
   buttons_layout->addLayout(size_layout);
-  buttons_layout->addWidget(button2);
+  buttons_layout->addLayout(resetbutton_layout);
   buttons_layout->addWidget(fast_actions);
   buttons_layout->addLayout(code_layout);
   buttons_layout->addStretch();
@@ -168,6 +175,7 @@ MainWindow::MainWindow(QWidget* parent)
     (button1b->*mfp)(&key_grabber_);
     (button1c->*mfp)(&key_grabber_);
     (button2->*mfp)(&key_grabber_);
+    (button3->*mfp)(&key_grabber_);
     (height_box->*mfp)(&key_grabber_);
     (width_box->*mfp)(&key_grabber_);
     (rand_min_box->*mfp)(&key_grabber_);
@@ -199,6 +207,7 @@ MainWindow::MainWindow(QWidget* parent)
           start_pos_ = {a, b};
           mode_label->hide();
           button1c->setDisabled(true);
+          button3->setDisabled(false);
         } else if (a + 1 == game_->X() && b == game_->Y()) {
           (*game_.*mover)(Game::kLeft, nullptr);
         } else if (a == game_->X() + 1 && b == game_->Y()) {
@@ -278,6 +287,8 @@ MainWindow::MainWindow(QWidget* parent)
     handle(0, 0, 0);
     button1c->setDisabled(false);
     button2->setDisabled(false);
+    button3->setDisabled(true);
+    start_pos_ = {0, 0};
 
     RecomputeSolvability();
     RedrawStars(star_label);
@@ -333,8 +344,18 @@ MainWindow::MainWindow(QWidget* parent)
     if (game_ != nullptr) {
       game_->Reset();
       handle(0, 0, 0);
+      start_pos_ = {0, 0};
       mode_label->show();
       button1c->setDisabled(false);
+      button3->setDisabled(true);
+    }
+  });
+
+  QObject::connect(button3, &QPushButton::clicked, [=]() {
+    if (game_ != nullptr) {
+      game_->Reset();
+      handle(2, start_pos_.x, start_pos_.y);
+      mode_label->show();
     }
   });
 
