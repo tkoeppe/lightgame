@@ -15,9 +15,11 @@
 #include "game.h"
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace tkware::lightgame {
@@ -343,6 +345,48 @@ std::unique_ptr<Game> LoadFromHexString(std::string code) {
   }
   game->LoadLayoutFromBits(reinterpret_cast<const unsigned char*>(&code[2]), 4);
   return game;
+}
+
+void SolutionTracker::RecomputeFromGame(Game* game) {
+  raw_solution_.clear();
+  solutions_.clear();
+  if (game->IsSolvable(&raw_solution_)) {
+    for (auto it = raw_solution_.begin(); it != raw_solution_.end(); ++it) {
+      solutions_.push_back({*it++, *it++, false});
+      while (*it != 0) ++it;
+    }
+  }
+}
+
+bool SolutionTracker::ReportSolution(Game::Coord start_pos) {
+  auto find_pos = [](Game::Coord pos) {
+    return [pos](const Solution& sol) { return sol.start_pos == pos; };
+  };
+
+  if (auto it = std::find_if(solutions_.begin(), solutions_.end(),
+                             find_pos(start_pos));
+      it != solutions_.end()) {
+    return !std::exchange(it->found, true);
+  } else {
+    return false;
+  }
+}
+
+std::size_t SolutionTracker::TotalCount() const {
+  return solutions_.size();
+}
+
+std::size_t SolutionTracker::FoundCount() const {
+  return std::count_if(solutions_.begin(), solutions_.end(),
+                       std::mem_fn(&Solution::found));
+}
+
+std::vector<Game::Coord> SolutionTracker::FoundSolutions() const {
+  std::vector<Game::Coord> result;
+  for (const Solution& solution : solutions_) {
+    if (solution.found) { result.push_back(solution.start_pos); }
+  }
+  return result;
 }
 
 }  //  namespace tkware::lightgame

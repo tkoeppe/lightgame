@@ -15,6 +15,7 @@
 #ifndef H_TKWARE_LIGHTGAME_GAME_
 #define H_TKWARE_LIGHTGAME_GAME_
 
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <random>
@@ -47,7 +48,13 @@ class Game {
 
   friend void operator|=(Dir& lhs, Dir rhs) { lhs = Dir(int(lhs) | int(rhs)); }
 
-  struct Coord { int x, y; };
+  struct Coord {
+    int x, y;
+    friend bool operator==(const Coord& lhs, const Coord& rhs) {
+      return lhs.x == rhs.x && lhs.y == rhs.y;
+    }
+  };
+
   using Path = std::vector<Coord>;
 
   // Creates a game of the given size.
@@ -170,6 +177,37 @@ private:
 // Serialization as 4-bit (hex) strings. Loading returns null on error.
 std::string SaveToHexString(const Game& game);
 std::unique_ptr<Game> LoadFromHexString(std::string code);
+
+// A SolutionTracker tracks how many solutions for a given game layout have
+// been found. This class is just an interface to Game::IsSolvable, and thus
+// echoes that function's behaviour: solutions consist only of a starting
+// point, and not of the complete action sequence (because the solver does not
+// explore multiple solving paths), and solutions are sequenced in the order
+// in which the solver reports them.
+class SolutionTracker {
+ public:
+  // Runs the solver for *game, and sets all possible solutions to "not found".
+  void RecomputeFromGame(Game* game);
+
+  // Reports "start_pos" as a found solution. Returns whether the solution was
+  // novel, i.e. has not previously been reported. Requires that start_pos is
+  // actually a solution.
+  bool ReportSolution(Game::Coord start_pos);
+
+  // Returns the counts of, respectively, all possible solutions and the found
+  // solutions.
+  std::size_t TotalCount() const;
+  std::size_t FoundCount() const;
+
+  // Returns a list of found solutions. The order is unspecified, but will
+  // incidentally be the order in which the solver reports solutions.
+  std::vector<Game::Coord> FoundSolutions() const;
+
+ private:
+  struct Solution { Game::Coord start_pos; bool found; };
+  std::vector<int> raw_solution_;
+  std::vector<Solution> solutions_;
+};
 
 }  //  namespace tkware::lightgame
 
