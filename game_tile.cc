@@ -21,7 +21,7 @@
 namespace tkware::lightgame {
 
 MouseLabel::MouseLabel(Game* game, int x, int y)
-    : QLabel(), game_(game), x_(x), y_(y) {
+    : QLabel(), game_(game), x_(x), y_(y), winning_start_(false) {
   setAlignment(Qt::AlignCenter);
 }
 
@@ -46,7 +46,7 @@ void MouseLabel::updateState() {
   } else {
     switch (game_->At(x_, y_)) {
       case Game::State::kOff:;
-        s = "O";
+        s = winning_start_ ? "<font color='#DAA520'>O</font>" : "O";
         setStyleSheet("background-color: #A00;");
         break;
       case Game::State::kOn:
@@ -61,6 +61,10 @@ void MouseLabel::updateState() {
   }
 
   setText((s + "_" + std::to_string(x_) + "_" + std::to_string(y_)).c_str());
+}
+
+void MouseLabel::markAsWinning(bool is_winning) {
+  winning_start_ = is_winning;
 }
 
 }  //  namespace tkware::lightgame

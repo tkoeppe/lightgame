@@ -195,12 +195,25 @@ MainWindow::MainWindow(QWidget* parent)
     bool (Game::*mover)(Game::Dir, Game::Path*) =
         fast_actions->isChecked() ? &Game::MoveFast : &Game::Move;
 
+    auto as_label = [board_layout](int x, int y) -> MouseLabel* {
+      auto* const lbl = board_layout->itemAtPosition(y, x)->widget();
+      assert(lbl != nullptr);
+      auto* const p = dynamic_cast<MouseLabel*>(lbl);
+      assert(p != nullptr);
+      return p;
+    };
+
     switch (type) {
       case 1:
         if (!game_->HasStarted()) {
           [](Game::State& s) { s = Game::State(2 - static_cast<int>(s)); }(game_->At(a, b));
           RecomputeSolvability();
           RedrawStars(star_label);
+          for (int y = 0; y != game_->Height(); ++y) {
+            for (int x = 0; x != game_->Width(); ++x) {
+              as_label(x, y)->markAsWinning(false);
+            }
+          }
         }
         break;
       case 2:
@@ -242,11 +255,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     for (int y = 0; y != game_->Height(); ++y) {
       for (int x = 0; x != game_->Width(); ++x) {
-        auto* lbl = board_layout->itemAtPosition(y, x)->widget();
-        assert(lbl != nullptr);
-        auto* p = dynamic_cast<MouseLabel*>(lbl);
-        assert(p != nullptr);
-        p->updateState();
+        as_label(x, y)->updateState();
       }
     }
 
@@ -256,6 +265,7 @@ MainWindow::MainWindow(QWidget* parent)
           win_label->show();
           if (sol_tracker_.ReportSolution(start_pos_)) {
             RedrawStars(star_label);
+            as_label(start_pos_.x - 1, start_pos_.y - 1)->markAsWinning(true);
           }
         } else {
           lose_label->show();

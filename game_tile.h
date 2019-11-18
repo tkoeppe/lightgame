@@ -31,6 +31,7 @@ class MouseLabel : public QLabel {
  public:
   explicit MouseLabel(Game* game, int x, int y);
   void updateState();
+  void markAsWinning(bool is_winning);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -38,6 +39,7 @@ class MouseLabel : public QLabel {
   
   Game* const game_;
   const int x_, y_;
+  bool winning_start_;
 };
 
 }  //  namespace tkware::lightgame
