@@ -34,6 +34,11 @@ to the existing layout randomly in a way that results in a solvable layout. For
 each layout, a hexadecimal code is shown that can be used to restore the layout
 later.
 
+Additionally, there are Bazel build rules (which include rules for unit tests
+and benchmarks), and there is a Qt project file for use with `qmake` (which only
+builds the main binary). Both of these options allow for easy building
+out-of-tree.
+
 ## Building and running
 
 The game is written in standard C++ and uses the Qt library. (There is also a
