@@ -56,5 +56,9 @@ if, say, you attempt to augment an impossible layout (e.g. a disconnected one).
 
 *   Random generation should be interruptible.
 *   Random augmentation should detect whether a solution is impossible.
-*   Unit tests, benchmarks.
-*   An Android build.
+*   Unit tests, benchmarks. (Coming. Testing and benchmarking
+    frameworks are already available via Bazel.)
+*   An Android build. (Doable via qmake: Run
+    `/path/to/android-qt/qmake "CONFIG += android_deployment_settings" cornerpaint.pro`,
+    then follow
+    [these instructions](https://doc.qt.io/qt-5/deployment-android.html#androiddeployqt).)
