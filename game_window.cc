@@ -355,6 +355,7 @@ MainWindow::MainWindow(QWidget* parent)
   QObject::connect(button3, &QPushButton::clicked, [=]() {
     if (game_ != nullptr) {
       game_->Reset();
+      handle(0, 0, 0);
       handle(2, start_pos_.x, start_pos_.y);
       mode_label->show();
     }
