@@ -156,18 +156,19 @@ MainWindow::MainWindow(QWidget* parent)
   buttons_layout->addStretch();
   buttons_layout->addLayout(meta_layout);
 
-  size_layout->addWidget(height_label, 1, 1);
-  size_layout->addWidget(height_box, 1, 2);
-  size_layout->addItem(new QSpacerItem(10, 0), 1, 3);
-  size_layout->addWidget(rand_min_label, 1, 4);
-  size_layout->addWidget(rand_min_box, 1, 5);
-  size_layout->addWidget(width_label, 2, 1);
-  size_layout->addWidget(width_box, 2, 2);
-  size_layout->addItem(new QSpacerItem(10, 0), 2, 3);
-  size_layout->addWidget(rand_max_label, 2, 4);
-  size_layout->addWidget(rand_max_box, 2, 5);
-  size_layout->addWidget(aug_label, 3, 4);
-  size_layout->addWidget(aug_box, 3, 5);
+  size_layout->addWidget(height_label, 0, 0);
+  size_layout->addWidget(height_box, 0, 1);
+  size_layout->addItem(new QSpacerItem(10, 0), 0, 2);
+  size_layout->addWidget(rand_min_label, 0, 3);
+  size_layout->addWidget(rand_min_box, 0, 4);
+  size_layout->addWidget(width_label, 1, 0);
+  size_layout->addWidget(width_box, 1, 1);
+  size_layout->addItem(new QSpacerItem(10, 0), 1, 2);
+  size_layout->addWidget(rand_max_label, 1, 3);
+  size_layout->addWidget(rand_max_box, 1, 4);
+  size_layout->addItem(new QSpacerItem(10, 0), 2, 2);
+  size_layout->addWidget(aug_label, 2, 3);
+  size_layout->addWidget(aug_box, 2, 4);
 
   auto set_key_grabbing = [=](bool on) {
     auto mfp = on ? &QObject::installEventFilter : &QObject::removeEventFilter;
