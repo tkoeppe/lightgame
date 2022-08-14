@@ -1,0 +1,36 @@
+name: BuildAndTest
+
+on:
+  pull_request:
+  push:
+    branches: [ 'main', 'beta' ]
+
+jobs:
+  build-with-bazel:
+    name: ${{matrix.cfg.name}}
+
+    runs-on: ${{matrix.cfg.os}}
+
+    strategy:
+      matrix:
+        cfg:
+          - { name: 'Linux GCC', os: 'ubuntu-20.04', cc: 'g++', flags: }
+          - { name: 'Linux LLVM/libc++', os: 'ubuntu-20.04', cc: 'clang++', flags: '--config=libc++' }
+
+    env:
+      CC: ${{matrix.cfg.cc}}
+      BAZEL_USE_CPP_ONLY_TOOLCHAIN: 1
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install infrastructure (Linux)
+        run: |
+          sudo apt-get install qt5-default
+          sudo ln -s /usr/lib/llvm-10/include/c++/v1 /usr/include/c++/v1
+
+      - name: build
+        run: bazel build -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_benchmark :game_cli :game_qt
+
+      - name: test
+        run: bazel test -c opt --dynamic_mode=off --show_progress_rate_limit=10 :game_test
