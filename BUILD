@@ -1,3 +1,5 @@
+load("@bazel_rules_qt//:qt.bzl", "qt_cc_library")
+
 cc_library(
     name = "game",
     srcs = ["game.cc"],
@@ -30,16 +32,14 @@ cc_binary(
     ],
 )
 
-load("@bazel_rules_qt//:qt.bzl", "qt_cc_library")
-
 qt_cc_library(
     name = "game_tile",
-    src = "game_tile.cc",
+    srcs = ["game_tile.cc"],
+    hdrs = ["game_tile.h"],
     copts = [
         "-std=c++17",
         "-fPIC",
     ],
-    hdr = "game_tile.h",
     deps = [
         ":game",
         "@qt//:qt_gui",
@@ -49,12 +49,12 @@ qt_cc_library(
 
 qt_cc_library(
     name = "game_keygrabber",
-    src = "game_keygrabber.cc",
+    srcs = ["game_keygrabber.cc"],
+    hdrs = ["game_keygrabber.h"],
     copts = [
         "-std=c++17",
         "-fPIC",
     ],
-    hdr = "game_keygrabber.h",
     deps = [
         "@qt//:qt_core",
         "@qt//:qt_gui",
@@ -63,12 +63,12 @@ qt_cc_library(
 
 qt_cc_library(
     name = "game_window",
-    src = "game_window.cc",
+    srcs = ["game_window.cc"],
+    hdrs = ["game_window.h"],
     copts = [
         "-std=c++17",
         "-fPIC",
     ],
-    hdr = "game_window.h",
     deps = [
         ":game",
         ":game_keygrabber",
