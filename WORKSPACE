@@ -20,8 +20,15 @@ http_archive(
     urls = ["https://github.com/justbuchanan/bazel_rules_qt/archive/master.zip"],
 )
 
+load("@com_justbuchanan_rules_qt//:qt_configure.bzl", "qt_configure")
+qt_configure()
+
+load("@local_config_qt//:local_qt.bzl", "local_qt_path")
 new_local_repository(
     name = "qt",
     build_file = "@com_justbuchanan_rules_qt//:qt.BUILD",
-    path = "/usr/include/x86_64-linux-gnu/qt5/"
+    path = local_qt_path(),
 )
+
+load("@com_justbuchanan_rules_qt//tools:qt_toolchain.bzl", "register_qt_toolchains")
+register_qt_toolchains()
