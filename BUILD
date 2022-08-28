@@ -1,4 +1,4 @@
-load("@bazel_rules_qt//:qt.bzl", "qt_cc_library")
+load("@com_justbuchanan_rules_qt//:qt.bzl", "qt_cc_library")
 
 cc_library(
     name = "game",
