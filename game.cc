@@ -352,7 +352,7 @@ void SolutionTracker::RecomputeFromGame(Game* game) {
   solutions_.clear();
   if (game->IsSolvable(&raw_solution_)) {
     for (auto it = raw_solution_.begin(); it != raw_solution_.end(); ++it) {
-      solutions_.push_back({*it++, *it++, false});
+      solutions_.push_back({{*it++, *it++}, false});
       while (*it != 0) ++it;
     }
   }
