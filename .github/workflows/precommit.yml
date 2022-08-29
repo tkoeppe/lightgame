@@ -40,3 +40,32 @@ jobs:
         env:
           BAZEL_RULES_QT_DIR: ${{ env.Qt5_DIR }}
         run: bazel test -c opt --dynamic_mode=off --show_progress_rate_limit=10 --linkopt=-L${{ env.Qt5_DIR }}/lib :game_test
+
+  build-for-android:
+    name: 'For Android'
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'linux'
+          target: 'android'
+          archives: 'qtbase qtsvg'
+
+      - name: Run QMake
+        run: qmake -spec android-clang "QT += svg" cornerpaint.pro
+
+      - name: Build
+        run: make -j2 apk_install_target
+
+      - name: List
+        run: find -L . -type f -name "*.so*"
+
+      - name: Deploy
+        run: androiddeployqt --input android-cornerpaint-deployment-settings.json --output android-build --android-platform android-29 --gradle
+
+      - name: Show
+        run: find -L android-build -type f
